@@ -104,6 +104,14 @@ export async function processCSVExtract(
 
   const { valid, invalid: validationInvalid } = splitBatchOutput(recordsWithContact);
 
+  const now = new Date().toISOString();
+  const normalized = valid.map(record => ({
+    ...record,
+    created_at: record.created_at && !isNaN(new Date(record.created_at).getTime())
+      ? record.created_at
+      : now,
+  }));
+
   const skipped: { row: any; reason: string }[] = [
     ...recordsWithoutContact.map((row, i) => ({ row, reason: 'No contact information (email or phone) found' })),
     ...validationInvalid,
@@ -111,7 +119,7 @@ export async function processCSVExtract(
   ];
 
   const insertedLeads = await Lead.insertMany(
-    valid.map(record => ({ ...record, batchId }))
+    normalized.map(record => ({ ...record, batchId }))
   );
 
   if (skipped.length > 0) {
