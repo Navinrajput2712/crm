@@ -1,13 +1,7 @@
 import { getToken, logout } from './auth';
 import type { LeadsResponse, BatchesResponse, ExtractResponse } from '../types/crm';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-const isRelative = !API_BASE.startsWith('http');
-
-function apiPath(endpoint: string): string {
-  const ep = endpoint.startsWith('/api/') ? endpoint.slice(4) : endpoint.replace(/^\//, '');
-  return isRelative ? `/api/backend/${ep}` : `${API_BASE}/api/${ep}`;
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 function authHeaders(): Record<string, string> {
   const token = getToken();
@@ -25,7 +19,7 @@ function handleUnauthorized(status: number) {
 }
 
 export async function processLeads(headers: string[], rows: any[], fileName?: string): Promise<ExtractResponse> {
-  const response = await fetch(apiPath('extract'), {
+  const response = await fetch(`${API_URL}/api/extract`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -56,7 +50,7 @@ export async function getLeads(search: string = '', offset: number = 0, limit: n
     limit: limit.toString(),
   });
 
-  const response = await fetch(apiPath(`leads?${query.toString()}`), {
+  const response = await fetch(`${API_URL}/api/leads?${query.toString()}`, {
     headers: authHeaders(),
   });
 
@@ -69,7 +63,7 @@ export async function getLeads(search: string = '', offset: number = 0, limit: n
 }
 
 export async function getBatches(): Promise<BatchesResponse> {
-  const response = await fetch(apiPath('batches'), {
+  const response = await fetch(`${API_URL}/api/batches`, {
     headers: authHeaders(),
   });
 
